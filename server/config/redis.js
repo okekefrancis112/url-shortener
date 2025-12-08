@@ -1,14 +1,22 @@
-// const Redis = require("ioredis");
-// const dotenv = require("dotenv");
-// dotenv.config();
+// import { Redis } from "@upstash/redis";
 
-// const redisClient = new Redis(process.env.REDIS_URL);
+// export const redisClient = new Redis({
+//     url: process.env.UPSTASH_REDIS_REST_URL,
+//     token: process.env.UPSTASH_REDIS_REST_TOKEN,
+// });
 
-// module.exports = redisClient;
+// Use dynamic import() for ES module package
+let redisClient;
 
-import { Redis } from "@upstash/redis";
+async function createRedisClient() {
+    const { Redis } = await import("@upstash/redis");
+    return new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+}
 
-export const redisClient = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+// Create and export the client
+redisClient = createRedisClient();
+
+module.exports = { redisClient };

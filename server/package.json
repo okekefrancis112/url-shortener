@@ -8,7 +8,7 @@
     "start": "node server.js",
     "test": "node ./node_modules/mocha/bin/mocha"
   },
-  "author": "Abhijeet Kumar",
+  "author": "Okeke Francis",
   "license": "ISC",
   "dependencies": {
     "@upstash/redis": "^1.35.7",
