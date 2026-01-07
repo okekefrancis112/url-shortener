@@ -104,6 +104,12 @@ const authRouter = require("./routes/auth");
 const urlRouter = require("./routes/url");
 const cors = require("cors");
 
+const redisClient = require("./config/redis");
+
+redisClient.ping()
+  .then(() => console.log("✅ Redis connected successfully"))
+  .catch(err => console.error("❌ Redis connection failed:", err));
+
 //To access data from .env file
 const dotenv = require("dotenv");
 const userRouter = require("./routes/user");
