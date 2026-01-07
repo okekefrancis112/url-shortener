@@ -1,18 +1,39 @@
 const redisClient = require("../config/redis");
 
 const rateLimit = async (req, res, next) => {
-  const ip = req.connection.remoteAddress;
-  const redisData = await redisClient
-    .multi()
-    .incr(ip)
-    .expire(ip, process.env.EXPIRATION_TIME)
-    .exec();
+  try {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const key = `rate-limit:${ip}`;
 
-  const hitsCountByIP = redisData[0][1];
+    // Get current count
+    const current = await redisClient.get(key);
+    const currentCount = current ? parseInt(current) : 0;
 
-  if (hitsCountByIP > process.env.HITS_COUNT_LIMIT) {
-    res.status(429).json({ status: "Failed", message: "Limit Exceeded" });
-  } else next();
+    // Check if limit exceeded
+    const limit = parseInt(process.env.HITS_COUNT_LIMIT) || 100;
+    if (currentCount >= limit) {
+      return res.status(429).json({
+        status: "Failed",
+        message: "Rate limit exceeded. Please try again later.",
+        retryAfter: process.env.EXPIRATION_TIME || 60
+      });
+    }
+
+    // Increment count
+    await redisClient.incr(key);
+
+    // Set expiration on first request
+    if (currentCount === 0) {
+      const expiration = parseInt(process.env.EXPIRATION_TIME) || 60;
+      await redisClient.expire(key, expiration);
+    }
+
+    next();
+  } catch (error) {
+    console.error('Rate limiting error:', error);
+    // Allow request if Redis fails
+    next();
+  }
 };
 
 module.exports = rateLimit;
