@@ -37,6 +37,7 @@ const DashboardPage = () => {
   // Helper function to construct full URL
   const getFullShortUrl = useCallback((shortId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:8080';
+    console.log("Base URL for short links:", baseUrl);
     return `${baseUrl}/${shortId}`;
   }, []);
 
